@@ -8,7 +8,7 @@ the page.
 
 After this large image is a solution section with hints and a walkthrough.
 
-![Petey the Page Performance Analyzer Thinking](static/head - thinking.png)
+![Petey the Page Performance Analyzer Thinking](static/head%20-%20thinking.png)
 
 # Solution
 
