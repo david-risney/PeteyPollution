@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; base-uri 'none'; script-src 'strict-dynamic' 'nonce-{{ nonce }}'; style-src 'self' 'unsafe-inline'; img-src 'self'; connect-src 'self';">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Petey Page Performance Analyzer</title>
+    <style>
+        @view-transition {
+            navigation: auto;
+        }
+
+        html, body {
+            margin: 0;
+            padding: 0;
+            border: 0;
+            height: 100%;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background-attachment: fixed;
+            min-height: 100vh;
+            color: #ffffff;
+        }
+
+        header {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            grid-template-rows: auto auto;
+            gap: 0.5em;
+            align-items: center;
+            padding: 2em;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        header h1 {
+            grid-column: 1 / 2;
+            grid-row: 1 / 3;
+            font-size: 2.5em;
+            margin: 0;
+            background: linear-gradient(135deg, #ffffff 0%, #a8edea 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-weight: 700;
+        }
+        #subtitle1 {
+            grid-column: 2 / 3;
+            grid-row: 1 / 2;
+            font-size: 1.2em;
+            margin: 0;
+            text-align: right;
+            color: rgba(255, 255, 255, 0.95);
+            font-weight: 500;
+        }
+        #subtitle2 {
+            grid-column: 2 / 3;
+            grid-row: 2 / 3;
+            font-size: 1em;
+            margin: 0;
+            text-align: right;
+            font-style: italic;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        main {
+            display: grid;
+            grid-template-columns: auto 1fr auto;
+            grid-template-rows: 1fr auto;
+            padding: 3em 2em;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        @keyframes bob {
+            0%, 100% {
+                transform: translateY(0) scaleY(calc(1 - var(--squash))) scaleX(calc(1 + var(--squash)));
+            }
+            50% {
+                transform: translateY(-10px) scaleY(calc(1 + var(--squash))) scaleX(calc(1 - var(--squash)));
+            }
+        }
+        
+        #mascot-img {
+            --squash: 0.04;
+            display: block;
+            margin: auto;
+            max-width: 200px;
+            grid-column: 1;
+            grid-row: 1 / 3;
+            align-self: center;
+            filter: drop-shadow(0 10px 30px rgba(0, 0, 0, 0.3));
+            animation: bob 4s ease-in-out infinite;
+        }
+        #mascot-img:hover {
+            animation-play-state: paused;
+            filter: drop-shadow(0 0 20px rgba(168, 237, 234, 0.8))
+                    drop-shadow(0 0 40px rgba(102, 126, 234, 0.6))
+                    drop-shadow(0 0 60px rgba(118, 75, 162, 0.4))
+                    drop-shadow(0 10px 30px rgba(0, 0, 0, 0.3));
+        }
+        #mascot-text-div {
+            grid-column: 2 / 4;
+            grid-row: 1;
+            font-size: 1.8em;
+            align-self: center;
+            font-weight: 600;
+            color: #ffffff;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+
+            margin-bottom: 1em;
+            padding: 1.5em;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 16px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            line-height: 1.4;
+            letter-spacing: -0.01em;
+
+            transition: height 0.3s ease;
+        }
+
+        #mascot-text-div span:not(.rainbow) {
+            display: inline-block;
+            margin-right: 0.2em;
+            animation: fadeIn 0.2s ease forwards;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        /* Used via script for emphasizing text */
+        @keyframes rainbowshift {
+            0% {
+                background-position: 0% 0%;
+            }
+            100% {
+                background-position: 400% 0%;
+            }
+        }
+
+        .rainbow {
+            background: linear-gradient(135deg, 
+                #ff0000 0%, 
+                #ff7f00 16.67%, 
+                #ffff00 33.33%, 
+                #00ff00 50%, 
+                #0000ff 66.67%, 
+                #4b0082 83.33%, 
+                #9400d3 100%);
+            background-size: 400% 400%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: rainbowshift 6s linear infinite;
+        }
+
+        #url-input {
+            grid-column: 2;
+            grid-row: 2;
+            padding: 1em;
+            font-size: 1em;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.95);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top-left-radius: 12px;
+            border-bottom-left-radius: 12px;
+            color: #333;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+        #url-input:focus {
+            outline: none;
+            border-color: #a8edea;
+            box-shadow: 0 4px 20px rgba(168, 237, 234, 0.3);
+        }
+        #url-input::placeholder {
+            color: #999;
+        }
+        #analyze-button {
+            grid-column: 3;
+            grid-row: 2;
+            padding: 1em 2em;
+            font-size: 1em;
+            background: linear-gradient(135deg, #667eea 0%, #a077c9 100%);
+            border: none;
+            border-top-right-radius: 12px;
+            border-bottom-right-radius: 12px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+        #analyze-button:hover {
+            background: linear-gradient(135deg, #667eea 0%, #6d4198 100%);
+            box-shadow: 0 6px 25px rgba(160, 172, 227, 0.4);
+        }
+        #analyze-button:active {
+            transform: translateY(0);
+        }
+
+        .ai-analysis {
+            display: none;
+            max-width: 800px;
+            margin: 2em auto;
+            padding: 2em;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 16px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        footer {
+            text-align: center;
+            padding: 2em;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Petey Page Performance Analyzer &#8482;</h1>
+        <p id="subtitle1">Your friendly tool for analyzing web page performance!</p>
+        <p id="subtitle2">Another fine Contoso Corporation product</p>
+    </header>
+
+    <main>
+        <img id="mascot-img" src="/static/head - happy.png" alt="Petey the Page Performance Analyzer">
+        <div id="mascot-text-div">Welcome!</div>
+        <input id="url-input" type="url" placeholder="Enter URL to analyze">
+        <button id="analyze-button">Analyze</button>
+    </main>
+
+    <article id="ai-analysis-result-0" class="ai-analysis">
+        <h2>AI Analysis Result</h2>
+        <p>Our AI analysis indicates that the page relies heavily on JavaScript for rendering critical content. Consider implementing server-side rendering or static site generation to improve load times and reduce dependency on client-side scripts.</p>
+    </article>
+
+    <article id="ai-analysis-result-1" class="ai-analysis">
+        <h2>AI Analysis Result</h2>
+        <p>The analysis suggests that the webpage has a high number of render-blocking scripts. To enhance performance, consider deferring non-essential JavaScript and optimizing the loading sequence of critical resources.</p>
+    </article>
+
+    <article id="ai-analysis-result-2" class="ai-analysis">
+        <h2>AI Analysis Result</h2>
+        <p>Our AI has detected that the webpage utilizes excessive third-party JavaScript libraries, which can lead to performance bottlenecks. Streamlining dependencies and minimizing the use of external scripts can significantly improve page load speed.</p>
+    </article>
+
+    <footer id="logHere">
+        <p>&copy; Contoso Corporation</p>
+    </footer>
+
+    <script nonce="{{ nonce }}">
+class Enum {
+    constructor(...keys) {
+        keys.forEach(key => this[key] = Symbol(key));
+        Object.freeze(this);
+    }
+}
+
+class Mascot {
+    static moods = new Enum('happy', 'sad', 'thinking', 'talking1', 'talking2');
+
+    #inProgressInterval = null;
+    #moodInternal = Mascot.moods.happy;
+    #temporaryMoodInternal = null;
+    #mascotImg = document.getElementById('mascot-img');
+    #mascotTextDiv = document.getElementById('mascot-text-div');
+
+    #clearExistingSpeaking() {
+        if (this.#inProgressInterval) {
+            clearInterval(this.#inProgressInterval);
+            this.#inProgressInterval = null;
+        }
+    }
+
+    textToHtmlArray(text) {
+        return text.split(' ').map(word => word + ' ');
+    }
+
+    speakText(text) {
+        return this.speakHtmlArray(this.textToHtmlArray(text));
+    }
+
+    speakHtmlArray(...parts) {
+        parts = parts.flat();
+        this.#mascotTextDiv.innerHTML = '';
+        this.#clearExistingSpeaking();
+
+        const mascotTextDiv = document.getElementById('mascot-text-div');
+
+        let index = 0;
+        this.#inProgressInterval = setInterval(() => {
+            if (index < parts.length) {
+                const span = document.createElement('span');
+                span.innerHTML = parts[index];
+                mascotTextDiv.appendChild(span);
+
+                this.#setTemporaryMood(
+                    index % 2 === 0 ? 
+                        Mascot.moods.talking1 : 
+                        Mascot.moods.talking2);
+                ++index;
+            } else {
+                this.#clearExistingSpeaking();
+                this.#setTemporaryMood(null);
+            }
+        }, 150);
+    }
+
+    set mood(mood) {
+        this.#moodInternal = mood;
+        this.#updateMoodImg();
+    }
+
+    get mood() {
+        return this.#moodInternal;
+    }
+
+    #setTemporaryMood(mood) {
+        this.#temporaryMoodInternal = mood;
+        this.#updateMoodImg();
+    }
+
+    #updateMoodImg() {
+        let imgSrc = '/static/head - ';
+        if (this.#temporaryMoodInternal) {
+            imgSrc += this.#temporaryMoodInternal.description + '.png';
+        } else {
+            imgSrc += this.#moodInternal.description + '.png';
+        }
+        this.#mascotImg.src = imgSrc;
+    }
+}
+const petey = new Mascot();
+
+function showAiAnalysisResult(indexToShow) {
+    for (let index = 0; index < 3; ++index) {
+        document.getElementById('ai-analysis-result-' + index).style.display = 
+            (index == indexToShow) ? 'block' : 'none';
+    }
+}
+
+async function analyzeUrl(targetUrl) {
+    showAiAnalysisResult(-1);
+    analyzeButton.disabled = true;
+    petey.mood = Mascot.moods.thinking;
+
+    let url = null;
+    try {
+        url = new URL(targetUrl.trim());
+    } catch {}
+
+    if (url) {
+        petey.speakHtmlArray(
+            petey.textToHtmlArray(`Analyzing the performance of ${url}. Please wait a moment while I gather the data.`),
+            "<br>", 
+            "<span class='rainbow'>Analyzing...</span>");
+
+        // NOTE: We got the API key set in a cookie on the backend bot and
+        // it does load the page, but we ran out of funding before implementing
+        // the actual AI analysis logic. 
+        // So we don't actually look at the report. We just pick one of the
+        // ways to say they're using too much JS.
+        const reportJsonResponse = await fetch('report?url=' + encodeURIComponent(targetUrl));
+        const reportJson = await reportJsonResponse.json();
+        console.log("Ignoring report", reportJson);
+
+        petey.speakText("Done! Here's what I found.");
+        petey.mood = Mascot.moods.happy;
+
+        const aiAnalysisIndex = Math.floor(Math.random() * 3);
+        showAiAnalysisResult(aiAnalysisIndex);
+    } else {
+        petey.mood = Mascot.moods.sad;
+        petey.speakText("This isn't a valid URL️");
+    }
+    analyzeButton.disabled = false;
+}
+
+const analyzeButton = document.getElementById('analyze-button');
+analyzeButton.addEventListener('click', async () => {
+    const targetUrlAsString = document.getElementById('url-input').value.trim();
+
+    try {
+        const targetUrl = new URL(targetUrlAsString);
+        const currentUrl = new URL(location.href);
+
+        // NOTE: We set the API key as a cookie on this page when running the 
+        // performance bot on the backend. Security team says we shouldn't do this
+        // so I made it so you can't analyze URLs on this host.
+        if (targetUrl.hostname != currentUrl.hostname) {
+            document.location = '?url=' + encodeURIComponent(targetUrl);
+        } else {
+            petey.mood = Mascot.moods.sad;
+            petey.speakText("Sorry, analysis is limited to URLs on other hosts.");
+        }
+    } catch (e) { }
+});
+
+function searchParamsToObject(searchParams) {
+    const targetRoot = {};
+    searchParams.forEach((value, keyNamesString) => {
+        // The name can have embedded '.'s to do assignment to sub-properties.
+        // eg https://a/?example.url=https://example.com&example.a=b
+        // would produce {"example":{"url":"https://example.com","a":"b"}}
+
+        const keyNames = keyNamesString.split(".");
+        const lastKeyName = keyNames.pop();
+        let target = targetRoot;
+
+        keyNames.forEach(name => {
+             if (!target[name]) {
+                 target[name] = Object.create(null);
+             }
+             target = target[name];
+        });
+    
+        target[lastKeyName] = value;
+    });
+    return targetRoot;
+}
+const searchParams = searchParamsToObject((new URL(location)).searchParams);
+
+// NOTE: Uncomment this for debugging!
+// window.debugScriptSrc = { href: "./dev.js" };
+if (window.debugScriptSrc) {
+    window.logHere.textContent += 
+        `Loading debug script from ${window.debugScriptSrc.href}...`;
+    const debugScript = document.createElement('script');
+    debugScript.src = window.debugScriptSrc.href;
+    document.head.appendChild(debugScript);
+    window.logHere.textContent += ` Loaded`;
+}
+
+const targetUrl = searchParams.url;
+if (!targetUrl) {
+    petey.speakText("Hello! I'm Petey, your friendly page performance analyzer powered by Contoso Corporation's most advanced AI. Enter a URL and I'll help you analyze its performance in no time!");
+} else {
+    analyzeUrl(targetUrl);
+}
+
+</script>
+</body>
+</html>
