@@ -240,7 +240,7 @@
     </header>
 
     <main>
-        <img id="mascot-img" src="/static/head - happy.png" alt="Petey the Page Performance Analyzer">
+        <img id="mascot-img" src="static/head - happy.png" alt="Petey the Page Performance Analyzer">
         <div id="mascot-text-div">Welcome!</div>
         <input id="url-input" type="url" placeholder="Enter URL to analyze">
         <button id="analyze-button">Analyze</button>
@@ -338,7 +338,7 @@ class Mascot {
     }
 
     #updateMoodImg() {
-        let imgSrc = '/static/head - ';
+        let imgSrc = 'static/head - ';
         if (this.#temporaryMoodInternal) {
             imgSrc += this.#temporaryMoodInternal.description + '.png';
         } else {
