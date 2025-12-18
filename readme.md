@@ -34,3 +34,7 @@ a property `__proto__` which is that object's prototype object. In this case tha
 object for everything. So by doing __proto__.debugScriptSrc.href=... we can add a debugScriptSrc.href property to everything.
 Then you can set its value to a data URL that contains JavaScript to run an alert.</p>
 </details>
+
+## Solution link
+
+<details><summary>Link</summary><p><code><a href="https://david-risney.github.io/PeteyPollution/?__proto__.debugScriptSrc.href=data:text/plain,alert(1)">https://david-risney.github.io/PeteyPollution/?__proto__.debugScriptSrc.href=data:text/plain,alert()</a></code></p></details>
