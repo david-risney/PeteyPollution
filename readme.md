@@ -4,6 +4,12 @@ This was the front end to a CTF challenge I created. I had so much fun writing i
 client side part here. Its missing the server side component, so to solve just try to get an `alert()` to open from
 the page.
 
+# Spoiler break
+
+After this large image is a solution section with hints and a walkthrough.
+
+![Petey the Page Performance Analyzer Thinking](static/head - thinking.png)
+
 # Solution
 
 ## Hints
